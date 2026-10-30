@@ -1,0 +1,589 @@
+﻿<!-- Study Hours & Planner Wrapper -->
+<div class="stp-calculator-wrapper">
+  <div class="stp-calculator-card">
+    
+    <!-- Top Header Banner -->
+    <div class="stp-card-header">
+      <h2>Study Hours &amp; Schedule Planner</h2>
+      <p>Plan your total study targets, get daily session breakdowns, allocate subject time, and track your study schedules.</p>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="stp-tabs">
+      <button class="stp-tab-btn active" onclick="switchStpTab('exam')">Exam Prep Mode</button>
+      <button class="stp-tab-btn" onclick="switchStpTab('weekly')">Weekly Target Mode</button>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="stp-content-grid">
+      
+      <!-- Input Details Panel -->
+      <div class="stp-panel stp-input-panel">
+        <h3 class="stp-panel-title">Planner Details</h3>
+
+        <!-- Mode 1: Exam Date Mode -->
+        <div id="stp-mode-exam" class="stp-mode-content active">
+          <div class="stp-form-group">
+            <label for="stp-total-hours">Total Study Hours Needed</label>
+            <input type="number" id="stp-total-hours" class="stp-input-field" placeholder="e.g. 100" value="100" oninput="calculateStudyPlan()">
+          </div>
+          <div class="stp-form-group">
+            <label for="stp-days-left">Days Remaining Until Exam</label>
+            <input type="number" id="stp-days-left" class="stp-input-field" placeholder="e.g. 20" value="20" oninput="calculateStudyPlan()">
+          </div>
+        </div>
+
+        <!-- Mode 2: Weekly Goal Mode -->
+        <div id="stp-mode-weekly" class="stp-mode-content">
+          <div class="stp-form-group">
+            <label for="stp-weekly-target">Weekly Target Study Hours</label>
+            <input type="number" id="stp-weekly-target" class="stp-input-field" placeholder="e.g. 35" value="35" oninput="calculateStudyPlan()">
+          </div>
+          <div class="stp-form-group">
+            <label for="stp-study-days">Study Days Per Week</label>
+            <input type="number" id="stp-study-days" class="stp-input-field" placeholder="e.g. 6" value="6" max="7" oninput="calculateStudyPlan()">
+          </div>
+        </div>
+
+        <!-- Common Settings -->
+        <div class="stp-form-row">
+          <div class="stp-form-group">
+            <label for="stp-session-length">Session Type</label>
+            <select id="stp-session-length" class="stp-input-field" onchange="calculateStudyPlan()">
+              <option value="25">Pomodoro (25 Min + 5 Min Break)</option>
+              <option value="50" selected="">Deep Focus (50 Min + 10 Min Break)</option>
+              <option value="90">Ultra Focus (90 Min + 15 Min Break)</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" class="stp-calc-btn" onclick="calculateStudyPlan(true)">
+          Generate &amp; Save Schedule
+        </button>
+      </div>
+
+      <!-- Results Display Panel -->
+      <div class="stp-panel stp-results-panel">
+        <h3 class="stp-panel-title">Daily Study Breakdown</h3>
+
+        <div class="stp-main-result-card">
+          <span class="stp-result-label">Daily Target Study Time</span>
+          <div class="stp-result-amount" id="stp-daily-hours">5.0 hrs / day</div>
+          <p class="stp-result-sub" id="stp-session-count">~ 6 Focus Sessions Daily</p>
+        </div>
+
+        <div class="stp-breakdown-grid">
+          <div class="stp-mini-card">
+            <span>Focus Time</span>
+            <strong id="stp-pure-focus">5.0 Hours</strong>
+          </div>
+          <div class="stp-mini-card">
+            <span>Total Breaks Needed</span>
+            <strong id="stp-break-time">50 Minutes</strong>
+          </div>
+          <div class="stp-mini-card">
+            <span>Hard Subject Allocation</span>
+            <strong id="stp-hard-time">2.5 Hours</strong>
+          </div>
+          <div class="stp-mini-card">
+            <span>Medium / Easy Allocation</span>
+            <strong id="stp-easy-time">2.5 Hours</strong>
+          </div>
+        </div>
+
+        <div class="stp-action-row">
+          <button class="stp-btn-outline" onclick="copyStudyPlan()">📋 Copy Plan</button>
+          <button class="stp-btn-outline" onclick="resetPlannerInputs()">🔄 Reset</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- History Log Section -->
+    <div class="stp-history-container">
+      <div class="stp-history-header">
+        <h3>📜 Saved Schedule History</h3>
+        <button class="stp-clear-history-btn" onclick="clearPlannerHistory()">Clear History</button>
+      </div>
+      <div id="stp-history-list" class="stp-history-list">
+        <p class="stp-no-history">No study plans saved yet. Create a schedule to store logs!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  /* Base Outer Wrapper */
+  .stp-calculator-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .stp-calculator-wrapper * {
+    box-sizing: border-box;
+  }
+
+  .stp-calculator-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 920px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+
+  /* Header Banner */
+  .stp-card-header {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stp-card-header h2 {
+    font-size: 1.75rem;
+    color: #1e40af;
+    font-weight: 700;
+    margin: 0 0 0.4rem 0;
+  }
+
+  .stp-card-header p {
+    color: #1d4ed8;
+    font-size: 0.92rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* Tabs */
+  .stp-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    background: #f1f5f9;
+    padding: 0.35rem;
+    border-radius: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stp-tab-btn {
+    flex: 1;
+    min-width: 130px;
+    padding: 0.6rem 0.8rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .stp-tab-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Main Layout Grid */
+  .stp-content-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stp-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .stp-panel-title {
+    font-size: 1.1rem;
+    color: #0f172a;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+  }
+
+  .stp-mode-content {
+    display: none;
+  }
+
+  .stp-mode-content.active {
+    display: block;
+  }
+
+  /* Form Elements */
+  .stp-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .stp-form-row {
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .stp-form-row .stp-form-group {
+    flex: 1;
+  }
+
+  .stp-form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .stp-input-field {
+    width: 100%;
+    height: 44px;
+    padding: 0 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #0f172a;
+    outline: none;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+  }
+
+  .stp-input-field:focus {
+    border-color: #2563eb;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .stp-calc-btn {
+    width: 100%;
+    height: 46px;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .stp-calc-btn:hover {
+    background-color: #1d4ed8;
+  }
+
+  /* Result Display Cards */
+  .stp-main-result-card {
+    background-color: #eff6ff;
+    border: 1px solid #dbeafe;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .stp-result-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .stp-result-amount {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: #1e40af;
+    margin: 0.4rem 0;
+  }
+
+  .stp-result-sub {
+    font-size: 0.85rem;
+    color: #1d4ed8;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .stp-breakdown-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .stp-mini-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .stp-mini-card span {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .stp-mini-card strong {
+    font-size: 0.95rem;
+    color: #0f172a;
+  }
+
+  .stp-action-row {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .stp-btn-outline {
+    flex: 1;
+    height: 38px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .stp-btn-outline:hover {
+    background-color: #f1f5f9;
+  }
+
+  /* History Container */
+  .stp-history-container {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+
+  .stp-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  .stp-history-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #0f172a;
+  }
+
+  .stp-clear-history-btn {
+    background: transparent;
+    border: none;
+    color: #dc2626;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .stp-clear-history-btn:hover {
+    text-decoration: underline;
+  }
+
+  .stp-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .stp-no-history {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .stp-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .stp-history-item .hist-desc {
+    color: #334155;
+  }
+
+  .stp-history-item .hist-result {
+    font-weight: 700;
+    color: #1e40af;
+  }
+
+  .stp-history-del {
+    color: #94a3b8;
+    cursor: pointer;
+    margin-left: 0.5rem;
+  }
+
+  .stp-history-del:hover {
+    color: #dc2626;
+  }
+
+  /* Responsive Rules */
+  @media (max-width: 768px) {
+    .stp-content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .stp-breakdown-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  let currentStpMode = 'exam';
+  let plannerHistory = JSON.parse(localStorage.getItem('stp_planner_history') || '[]');
+
+  function switchStpTab(mode) {
+    currentStpMode = mode;
+    document.querySelectorAll('.stp-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.stp-mode-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(`stp-mode-${mode}`).classList.add('active');
+
+    calculateStudyPlan(false);
+  }
+
+  function calculateStudyPlan(saveToHistory = false) {
+    let dailyHours = 0;
+    let descriptionText = "";
+    const sessionLengthMin = parseInt(document.getElementById('stp-session-length').value) || 50;
+
+    if (currentStpMode === 'exam') {
+      const totalHours = parseFloat(document.getElementById('stp-total-hours').value) || 0;
+      const daysLeft = parseFloat(document.getElementById('stp-days-left').value) || 1;
+      dailyHours = daysLeft > 0 ? (totalHours / daysLeft) : 0;
+      descriptionText = `${totalHours} hrs in ${daysLeft} days (Exam Prep)`;
+    } else {
+      const weeklyTarget = parseFloat(document.getElementById('stp-weekly-target').value) || 0;
+      const studyDays = parseFloat(document.getElementById('stp-study-days').value) || 1;
+      dailyHours = studyDays > 0 ? (weeklyTarget / studyDays) : 0;
+      descriptionText = `${weeklyTarget} hrs/wk (${studyDays} days study)`;
+    }
+
+    // Sessions & Breaks calculation
+    const dailyMinutes = dailyHours * 60;
+    const sessionCount = Math.ceil(dailyMinutes / sessionLengthMin);
+
+    // Break time logic (5 mins for Pomodoro, 10 for Deep Focus, 15 for Ultra Focus)
+    let breakPerSession = sessionLengthMin === 25 ? 5 : (sessionLengthMin === 50 ? 10 : 15);
+    const totalBreakMinutes = sessionCount * breakPerSession;
+
+    // Time allocation
+    const hardSubjectHours = (dailyHours * 0.5).toFixed(1);
+    const easySubjectHours = (dailyHours * 0.5).toFixed(1);
+
+    // Render to UI
+    document.getElementById('stp-daily-hours').innerText = `${dailyHours.toFixed(1)} hrs / day`;
+    document.getElementById('stp-session-count').innerText = `~ ${sessionCount} Focus Sessions (${sessionLengthMin}m each)`;
+    document.getElementById('stp-pure-focus').innerText = `${dailyHours.toFixed(1)} Hours`;
+    document.getElementById('stp-break-time').innerText = `${totalBreakMinutes} Minutes`;
+    document.getElementById('stp-hard-time').innerText = `${hardSubjectHours} Hours`;
+    document.getElementById('stp-easy-time').innerText = `${easySubjectHours} Hours`;
+
+    if (saveToHistory && dailyHours > 0) {
+      addPlannerHistory(descriptionText, `${dailyHours.toFixed(1)} hrs/day`);
+    }
+  }
+
+  /* LocalStorage History Functions */
+  function addPlannerHistory(desc, res) {
+    const item = { desc, res, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+    plannerHistory.unshift(item);
+    if (plannerHistory.length > 10) plannerHistory.pop();
+    localStorage.setItem('stp_planner_history', JSON.stringify(plannerHistory));
+    renderPlannerHistory();
+  }
+
+  function renderPlannerHistory() {
+    const list = document.getElementById('stp-history-list');
+    if (plannerHistory.length === 0) {
+      list.innerHTML = `<p class="stp-no-history">No study plans saved yet. Create a schedule to store logs!</p>`;
+      return;
+    }
+
+    list.innerHTML = plannerHistory.map((item, index) => `
+      <div class="stp-history-item">
+        <div>
+          <span class="hist-desc">${item.desc}</span>
+          <small style="color:#94a3b8; margin-left: 6px;">(${item.timestamp})</small>
+        </div>
+        <div>
+          <span class="hist-result">${item.res}</span>
+          <span class="stp-history-del" onclick="deletePlannerHistoryItem(${index})">✖</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function deletePlannerHistoryItem(index) {
+    plannerHistory.splice(index, 1);
+    localStorage.setItem('stp_planner_history', JSON.stringify(plannerHistory));
+    renderPlannerHistory();
+  }
+
+  function clearPlannerHistory() {
+    plannerHistory = [];
+    localStorage.removeItem('stp_planner_history');
+    renderPlannerHistory();
+  }
+
+  function copyStudyPlan() {
+    const daily = document.getElementById('stp-daily-hours').innerText;
+    const sessions = document.getElementById('stp-session-count').innerText;
+    const textToCopy = `My Study Goal: ${daily} | ${sessions}`;
+    navigator.clipboard.writeText(textToCopy);
+    alert(`Copied Plan: ${textToCopy}`);
+  }
+
+  function resetPlannerInputs() {
+    document.getElementById('stp-total-hours').value = '';
+    document.getElementById('stp-days-left').value = '';
+    document.getElementById('stp-weekly-target').value = '';
+    document.getElementById('stp-study-days').value = '6';
+
+    document.getElementById('stp-daily-hours').innerText = "0.0 hrs / day";
+    document.getElementById('stp-session-count').innerText = "~ 0 Focus Sessions";
+    document.getElementById('stp-pure-focus').innerText = "0.0 Hours";
+    document.getElementById('stp-break-time').innerText = "0 Minutes";
+    document.getElementById('stp-hard-time').innerText = "0.0 Hours";
+    document.getElementById('stp-easy-time').innerText = "0.0 Hours";
+  }
+
+  // Initial Run
+  document.addEventListener("DOMContentLoaded", function() {
+    renderPlannerHistory();
+    calculateStudyPlan(false);
+  });
+  calculateStudyPlan(false);
+</script><p>Powered by <a href="https://freecalctools.net/" target="_blank">Free Calc Tools</a></p>
